@@ -28,7 +28,6 @@ type Node struct {
 
 const prob = 0.3
 
-
 func diametru(adj [][]int) int {
 	n := len(adj)
 	diam := 0
@@ -62,10 +61,9 @@ func diametru(adj [][]int) int {
 	return diam
 }
 
-// tareConexFara verifică dacă subgraful indus de nodurile încă corecte,
-// fără nodul `exclus`, rămâne tare conex.
+
 func tareConexFara(nodes []*Node, exclus int) bool {
-	idx := map[int]int{} // id original -> index în subgraf
+	idx := map[int]int{} 
 	for _, nd := range nodes {
 		if !nd.Crashed && nd.ID != exclus {
 			idx[nd.ID] = len(idx)
@@ -137,6 +135,9 @@ func citesteInput() (n, s int, tokens []int, adj [][]int, err error) {
 		if l != "" {
 			linii = append(linii, l)
 		}
+	}
+	if err := sc.Err(); err != nil {
+		return 0, 0, nil, nil, fmt.Errorf("eroare la citirea inputului: %w", err)
 	}
 	if len(linii) < 2 {
 		return 0, 0, nil, nil, fmt.Errorf("input incomplet")
@@ -251,14 +252,13 @@ func main() {
 				}
 			}(nd, destinatari)
 		}
-		wg.Wait() // barieră: toate mesajele iterației t au fost trimise
+		wg.Wait()
 
 		if victima != -1 {
 			nodes[victima].Crashed = true
 			fmt.Fprintf(os.Stderr, "[t=%d] nodul %d a intrat în crash\n", t, victima)
 		}
 
-		// Pașii 2-3: fiecare nod primește mesajele și face Mi(t+1) = Mi(t) ∪ U.
 		for _, nd := range nodes {
 			wg.Add(1)
 			go func(nd *Node) {
@@ -267,8 +267,7 @@ func main() {
 					select {
 					case m := <-inbox[nd.ID]:
 						if nd.Crashed {
-							continue // un nod căzut nu mai procesează nimic
-						}
+							continue						}
 						for k := range m {
 							nd.M[k] = struct{}{}
 						}
@@ -280,15 +279,12 @@ func main() {
 		}
 		wg.Wait()
 
-		// Pasul 4: condiția de oprire.
 		if t > limita {
 			break
 		}
-		// Pasul 5
 		t++
 	}
 
-	// Afișare: memoria finală a unui nod corect.
 	var corect *Node
 	for _, nd := range nodes {
 		if !nd.Crashed {
